@@ -155,6 +155,23 @@ Just Control
 Just Space
 ```
 
+#### `combiningClass`
+
+``` purescript
+combiningClass :: CodePoint -> Int
+```
+
+The combining class assigned to a character. Defaults to 0, which means
+the character does not combine.
+
+#### `isCombining`
+
+``` purescript
+isCombining :: CodePoint -> Boolean
+```
+
+Selects combining characters.
+
 #### `isAscii`
 
 ``` purescript

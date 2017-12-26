@@ -102,17 +102,19 @@ instance showUnicodeCategory :: Show UnicodeCategory where
     show NUMCAT_CO = "NUMCAT_CO"
     show NUMCAT_CN = "NUMCAT_CN"
 
-newtype ConversionRule = ConversionRule { category   :: Int
-                                        , unicodeCat :: UnicodeCategory
-                                        , possible   :: Int
-                                        , updist     :: Int
-                                        , lowdist    :: Int
-                                        , titledist  :: Int
+newtype ConversionRule = ConversionRule { category       :: Int
+                                        , unicodeCat     :: UnicodeCategory
+                                        , combiningClass :: Int
+                                        , possible       :: Int
+                                        , updist         :: Int
+                                        , lowdist        :: Int
+                                        , titledist      :: Int
                                         }
 
 instance showConversionRule :: Show ConversionRule where
     show (ConversionRule rule) = "ConversionRule { category: " <> show rule.category
                               <> ", unicodeCat: " <> show rule.unicodeCat
+                              <> ", combiningClass: " <> show rule.combiningClass
                               <> ", possible: " <> show rule.possible
                               <> ", updist: " <> show rule.updist
                               <> ", lowdist: " <> show rule.lowdist
@@ -177,7 +179,7 @@ function dumpblock()
 	}
 
 	split(blockr, rsp, ",")
-	if(substr(rsp[3], 12, 1) == "1")
+	if(substr(rsp[4], 12, 1) == "1")
 	{
 		cblcks[cblckidx]=blkd
 		cblckidx++
@@ -201,6 +203,7 @@ function dumpblock()
 	up=h2d($13)
 	low=h2d($14)
 	title=h2d($15)
+  cmbcls=h2d($4)
 	convpos=1
 	if((up==0)&&(low==0)&&(title==0)) convpos=0
 	if(up==0) up=self
@@ -212,6 +215,7 @@ function dumpblock()
 	rule = \
 		"{ category: gencat" cat \
 		", unicodeCat: NUMCAT_" cat \
+    ", combiningClass: " cmbcls \
 		( (convpos==1) ? \
 				(", possible: 1" \
 				 ", updist: " updist \
@@ -327,7 +331,7 @@ cat <<EOF
 -- current block is returned as usual.
 
 nullrule :: ConversionRule
-nullrule = ConversionRule { category: gencatLU, unicodeCat: NUMCAT_CN, possible: 0, updist: 0, lowdist: 0, titledist: 0 }
+nullrule = ConversionRule { category: gencatLU, unicodeCat: NUMCAT_CN, combiningClass: 0, possible: 0, updist: 0, lowdist: 0, titledist: 0 }
 
 blkCmp :: CharBlock -> CharBlock -> Ordering
 blkCmp (CharBlock key) (CharBlock cur)
@@ -436,5 +440,16 @@ uGencat :: Int -> Maybe UnicodeCategory
 uGencat char =
     let conversionRule = getRule allchars char numBlocks
     in map (\(ConversionRule rule) -> rule.unicodeCat) conversionRule
+
+--
+-- Check the combining class of a character
+--
+uCombClass :: Int -> Int
+uCombClass char =
+    let numOfBlocks = if char < 256 then numLat1Blocks else numBlocks
+        maybeConversionRule = getRule allchars char numOfBlocks
+    in case maybeConversionRule of
+            Nothing -> 0
+            Just (ConversionRule rule) -> rule.combiningClass
 
 EOF

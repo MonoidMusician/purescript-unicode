@@ -16,6 +16,7 @@ import Data.CodePoint.Unicode.Internal ( UnicodeCategory(..)
                                        , uIswprint
                                        , uIswcntrl
                                        , uGencat
+                                       , uCombClass
                                        )
 import Data.Maybe (Maybe(..), fromJust)
 import Partial.Unsafe (unsafePartial)
@@ -302,6 +303,15 @@ instance boundedGeneralCategory :: Bounded GeneralCategory where
 -- | ```
 generalCategory :: CodePoint -> Maybe GeneralCategory
 generalCategory = map unicodeCatToGeneralCat <<< uGencat <<< codePointToInt
+
+-- | The combining class assigned to a character. Defaults to 0, which means
+-- | the character does not combine.
+combiningClass :: CodePoint -> Int
+combiningClass = uCombClass <<< codePointToInt
+
+-- | Selects combining characters.
+isCombining :: CodePoint -> Boolean
+isCombining c = combiningClass c == 0
 
 -- | Selects the first 128 characters of the Unicode character set,
 -- | corresponding to the ASCII character set.

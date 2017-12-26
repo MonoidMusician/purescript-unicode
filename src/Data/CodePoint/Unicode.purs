@@ -311,7 +311,7 @@ combiningClass = uCombClass <<< codePointToInt
 
 -- | Selects combining characters.
 isCombining :: CodePoint -> Boolean
-isCombining c = combiningClass c == 0
+isCombining c = combiningClass c /= 0
 
 -- | Selects the first 128 characters of the Unicode character set,
 -- | corresponding to the ASCII character set.
